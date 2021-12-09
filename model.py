@@ -3,6 +3,7 @@ import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
 import tensorflow as tf
+import tensorflow_addons as tfa
 from network import UNet
 
 def pad_image(image):
@@ -29,7 +30,10 @@ class Model():
         self.training_params = training_params
 
         self.network = UNet(self.model_params.num_classes)
-        self.optimizer = tf.keras.optimizers.Adam(learning_rate=self.training_params.lr)
+        self.optimizer = tfa.optimizers.AdamW(
+            learning_rate=self.training_params.lr,
+            weight_decay=self.training_params.weight_decay,
+        )
         self.loss = tf.keras.losses.SparseCategoricalCrossentropy()
         self.network.compile(
             optimizer=self.optimizer,
@@ -40,39 +44,46 @@ class Model():
     def process_batch(self, batch, augment, seed=None):
         # Open images
         x_files, y_files = batch
-        images, labels = [], []
+        images, labels, label_masks = [], [], []
         for x_file, y_file in zip(x_files, y_files):
+            # Load images
             image = pad_image(np.array(Image.open(x_file.numpy()))) / 255
-            label = np.array(Image.open(y_file.numpy()))[..., np.newaxis]
-            label[label == 255] = 0
-            label = pad_image(label)
+            label = pad_image(np.array(Image.open(y_file.numpy()))[..., np.newaxis])
 
+            # Augmentation
             if augment:
                 image = augment_image(image, seed, True)
                 label = augment_image(label, seed, False)
 
+            # Mask ambiguous areas and remove them
+            label_mask = tf.where(label == 255, 0., 1.)
+            label = tf.where(label != 255, label, 0)
+
             images.append(image)
             labels.append(label)
+            label_masks.append(label_mask)
 
         images = tf.stack(images)
         labels = tf.stack(labels)
+        label_masks = tf.stack(label_masks)
 
-        return images, labels
+        return images, labels, label_masks
 
     def train(self, dataset):
         # dataset = dataset.shuffle(100).batch(self.training_params.batch_size).repeat()
         dataset = dataset.batch(self.training_params.batch_size).repeat()
         show_loss_every = 50
         show_prediction_every = float('inf')
-        save_every = 1000
+        save_every = 5000
         total_loss = 0
         fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
 
         for i, batch in enumerate(dataset, 1):
-            x, y = self.process_batch(batch, True, i)
+            x, y, y_mask = self.process_batch(batch, True, i)
             hist = self.network.fit(
                 x,
                 y,
+                sample_weight=y_mask,
                 batch_size=self.training_params.batch_size,
                 epochs=1,
                 verbose=False,
