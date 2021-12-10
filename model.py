@@ -80,8 +80,8 @@ class Model():
         train_ds_size = tf.data.experimental.cardinality(train_ds)
         validation_ds = validation_ds.batch(1)
         save_every = 2
-        show_prediction_every = 1
-        fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
+        show_prediction_every = float('inf')
+        # fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
         loss_history = []
         val_loss_history = []
         iou_history = []
@@ -103,17 +103,17 @@ class Model():
                 total_loss += hist.history['loss'][-1]
                 total_iou += hist.history['iou'][-1]
 
-                if i % show_prediction_every == 0:
-                    ax1.set_title('Image')
-                    ax1.imshow(x[0])
-                    ax2.set_title('Ground Truth')
-                    ax2.imshow(y[0])
-                    ax3.set_title('Prediction')
-                    prediction = np.squeeze(np.argmax(self.network(tf.expand_dims(x[0], 0)), axis=-1))
-                    ax3.imshow(prediction)
-                    plt.ion()
-                    plt.draw()
-                    plt.pause(0.001)
+                # if i % show_prediction_every == 0:
+                #     ax1.set_title('Image')
+                #     ax1.imshow(x[0])
+                #     ax2.set_title('Ground Truth')
+                #     ax2.imshow(y[0])
+                #     ax3.set_title('Prediction')
+                #     prediction = np.squeeze(np.argmax(self.network(tf.expand_dims(x[0], 0)), axis=-1))
+                #     ax3.imshow(prediction)
+                #     plt.ion()
+                #     plt.draw()
+                #     plt.pause(0.001)
 
             # Epoch done, print out stats
             mean_loss = total_loss / i
