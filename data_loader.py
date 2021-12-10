@@ -10,7 +10,19 @@ def _get_x_y(label_path):
     return image_path, label_path
 
 def load_dataset(path=TRAIN_VAL_DATASET_PATH):
+    # Load datset
     file_ds = tf.data.Dataset.list_files(os.path.join(LABEL_DIRECTORY, '*'), shuffle=False)
-    # TODO: take (256, 256 subsections)
     dataset = file_ds.map(_get_x_y)
-    return dataset
+
+    # Split into training/validation/test
+    ds_size = tf.data.experimental.cardinality(dataset).numpy()
+    train_ratio = 0.9
+    train_size = train_ratio * ds_size
+    validation_ratio = 0.05
+    validation_size = train_ratio * ds_size
+    test_ratio = 0.05
+    train_ds = dataset.take(train_size).shuffle(100)
+    validation_ds = dataset.skip(train_size).take(validation_size)
+    test_ds = dataset.skip(train_size).skip(validation_size)
+
+    return train_ds, validation_ds, test_ds
