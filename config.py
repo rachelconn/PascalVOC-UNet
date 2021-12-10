@@ -6,21 +6,20 @@ ModelParams = namedtuple('ModelParams', [
 ])
 
 default_model_params = ModelParams(**{
-    'name': 'deep_encoder',
-    'num_classes': 22,
+    'name': 'epochs',
+    'num_classes': 21,
 })
 
 TrainingParams = namedtuple('TrainingParams', [
     'lr',
     'batch_size',
-    'num_batches',
+    'num_epochs',
     'weight_decay',
 ])
 
 default_training_params = TrainingParams(**{
-    # First 10k epochs: 0.00003, second 10k: 0.000003
     'lr': 3e-4,
-    'batch_size': 4,
-    'num_batches': 80_000,
+    'batch_size': 8,
+    'num_epochs': 300,
     'weight_decay': 1e-4,
 })
