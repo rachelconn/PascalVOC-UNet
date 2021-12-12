@@ -162,6 +162,20 @@ class Model():
         plt.legend()
         plt.show()
 
+    def test(self, test_ds):
+        test_ds = test_ds.batch(1)
+        loss = 0
+        iou = 0
+        for i, batch in enumerate(test_ds, 1):
+            x, y, y_mask = self.process_batch(batch, False, 0)
+            pred = self.network(x)
+            loss += self.network.loss(y, pred, y_mask).numpy()
+            iou += self.iou_metric(y, pred, y_mask).numpy()
+        mean_loss = loss / i
+        mean_iou = iou / i
+        print(f'Testing loss: {mean_loss}')
+        print(f'Testing IoU: {mean_iou}')
+
     def save(self, i):
         path = os.path.join('models', f'{self.model_params.name}_{i}', 'model')
         self.network.save_weights(path)
