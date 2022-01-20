@@ -12,7 +12,7 @@ class CategoricalMeanIoU(tf.metrics.MeanIoU):
 
 def pad_image(image):
     image_h, image_w = image.shape[0:2]
-    y_padding, x_padding = (-(image_h % -16), -(image_w % -16))
+    y_padding, x_padding = (-(image_h % -32), -(image_w % -32))
     if image_h < 256:
         y_padding = 256 - image_h
     if image_w < 256:
@@ -53,7 +53,7 @@ class Model():
         images, labels, label_masks = [], [], []
         for x_file, y_file in zip(x_files, y_files):
             # Load images
-            image = pad_image(np.array(Image.open(x_file.numpy()))) / 255
+            image = pad_image(np.array(Image.open(x_file.numpy())))
             label = pad_image(np.array(Image.open(y_file.numpy()))[..., np.newaxis])
 
             # Augmentation

@@ -6,7 +6,7 @@ ModelParams = namedtuple('ModelParams', [
 ])
 
 default_model_params = ModelParams(**{
-    'name': 'epochs',
+    'name': 'resnet',
     'num_classes': 21,
 })
 
@@ -20,6 +20,6 @@ TrainingParams = namedtuple('TrainingParams', [
 default_training_params = TrainingParams(**{
     'lr': 3e-4,
     'batch_size': 8,
-    'num_epochs': 300,
+    'num_epochs': 200,
     'weight_decay': 1e-4,
 })
