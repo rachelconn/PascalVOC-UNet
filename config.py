@@ -18,8 +18,8 @@ TrainingParams = namedtuple('TrainingParams', [
 ])
 
 default_training_params = TrainingParams(**{
-    'lr': 3e-4,
+    'lr': 3e-6,
     'batch_size': 8,
-    'num_epochs': 200,
+    'num_epochs': 400,
     'weight_decay': 1e-4,
 })

@@ -13,16 +13,16 @@ class CategoricalMeanIoU(tf.metrics.MeanIoU):
 def pad_image(image):
     image_h, image_w = image.shape[0:2]
     y_padding, x_padding = (-(image_h % -32), -(image_w % -32))
-    if image_h < 256:
-        y_padding = 256 - image_h
-    if image_w < 256:
-        x_padding = 256 - image_w
+    if image_h < 224:
+        y_padding = 224 - image_h
+    if image_w < 224:
+        x_padding = 224 - image_w
     paddings = [[0, y_padding], [0, x_padding], [0, 0]]
     return tf.pad(image, tf.constant(paddings))
 
 def augment_image(image, seed, is_image):
     seed = (seed, seed)
-    image = tf.image.stateless_random_crop(image, size=(256, 256, image.shape[2]), seed=seed)
+    image = tf.image.stateless_random_crop(image, size=(224, 224, image.shape[2]), seed=seed)
     image = tf.image.stateless_random_flip_left_right(image, seed=seed)
     if is_image:
         image = tf.image.stateless_random_brightness(image, max_delta=0.2, seed=seed)
@@ -60,6 +60,9 @@ class Model():
             if augment:
                 image = augment_image(image, seed, True)
                 label = augment_image(label, seed, False)
+            else:
+                image = tf.image.crop_to_bounding_box(image, 0, 0, 224, 224)
+                label = tf.image.crop_to_bounding_box(label, 0, 0, 224, 224)
 
             # Mask ambiguous areas and remove them
             label_mask = tf.where(label == 255, 0., 1.)
